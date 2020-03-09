@@ -1,0 +1,103 @@
+public class PurchaseOrdersThisWeek {
+	// List of Salesforce user ids to send the email to
+	private static List<String> sendEmailto = 
+	new List<String> {'0051U0000020Uh8QAE'};
+    //    new List<String> {'00519000002t0QhAAI'};
+	// Email subject
+	private static String emailSubject = 'Orders To Place This Week';	
+	public void sendEmailMessage(List<String> body) {
+                                                        if (body == NULL || body.isEmpty()) {
+                                                            System.debug('The Body is Null or Empty');
+                                                            return;
+                                                    }
+
+		// Construct the Single Email Message
+		Messaging.SingleEmailMessage message = new Messaging.SingleEmailMessage();
+		message.toAddresses = sendEmailto;
+		message.subject = emailSubject;
+		String messageBody = String.join(body, '\n\n');
+        message.htmlbody = messageBody;
+
+		try {
+			// Do not check for errors as nothing to do in that case
+			// We just want to bail out gracefully
+			Messaging.sendEmail(new Messaging.SingleEmailMessage[] {message});
+		} catch(System.CalloutException e) {
+			System.debug('ERROR:' + e);
+		}
+	}
+
+	public void parsePurchaseOrders() {
+
+                                        // run SOQL on custom Order OBJ filtering on UserName and CreatedDate
+                                        List<Custom_Order__c> queryResults = [SELECT id, Name, Order_Date__c,Install_Date__c, 
+                                                                                Owner.name, Lead_Time_In_Weeks__c,Place_Order_This_Week__c,Ship_Date__c  
+                                                                              FROM Custom_Order__c  
+                                                                              Where Place_Order_This_Week__c=true AND Order_Type__C!='Back Order'
+                                                                             ];
+                                        if (queryResults.isEmpty()) {
+                                            return;
+                                        }
+		// parse the query to build the body for the email
+		List<String> emailBodyList = new List<String>();
+        string intro = 'The following Orders need to be placed this week by Thursday 12pm, see below:<br></br>';
+        string headers = '<table style="width:100%; padding-top:10px;"> <tr> <th style="text-align:left;">Name:</th> <th style="text-align:left;">Order Date:</th> <th style="text-align:left;">Ship Date:</th> <th style="text-align:left;">Install Date:</th> <th style="text-align:left;">Owner:</th></tr>';
+        emailBodyList.add(intro);
+        emailBodyList.add(headers);
+
+		for (Custom_Order__c log: queryResults) {
+                                                string formattedDate = log.Order_Date__c.format();
+                                                string formattedDateInstall = log.Install_Date__C.format();
+            									string formattedShipDate = log.Ship_Date__c.format();
+                                                String fullFileURL = URL.getSalesforceBaseUrl().toExternalForm() +  '/' + log.id;
+                                                String emailLine = '<tr><td>' + log.name + '</td>'+'<td>' + formattedDate + '</td>' + '<td>' + formattedShipDate + '</td>' 
+                                                    + '<td>'+ formattedDateInstall + '</td>'+ '<td>' + log.owner.name + '</td>' +'</tr>';
+                                            	emailBodyList.add(emailLine);	
+                                                }
+		if (!emailBodyList.isEmpty()) {
+                                        system.debug('sent email');
+                                        EmailBodyList.add('</table>');
+                                        sendEmailMessage(emailBodyList);
+        							  } 
+        								else { system.debug('No Message Sent- list is empty.');}
+        
+                                        }
+    
+    public void parsePurchaseOrdersBackOrder() {
+
+                                                // run SOQL on custom Order OBJ filtering on UserName and CreatedDate
+                                                List<Custom_Order__c> queryResults = [SELECT id, Name, Order_Date__c,Install_Date__c, 
+                                                                                        Owner.name, Lead_Time_In_Weeks__c,Place_Order_This_Week__c,Ship_Date__c  
+                                                                                      FROM Custom_Order__c  
+                                                                                      Where Place_Order_This_Week__c=true AND Order_Type__C='Back Order'
+                                                                                     ];
+                                                if (queryResults.isEmpty()) {
+                                                    return;
+                                                }
+
+		// parse the query to build the body for the email
+		List<String> emailBodyList = new List<String>();
+        string intro = 'The following Back Orders need to be placed this week by Thursday 12pm, see below:</br></br>';
+        string headers = '<table style="width:100%; padding-top:10px;"> <tr> <th style="text-align:left;">Name:</th> <th style="text-align:left;">Order Date:</th> <th style="text-align:left;">Ship Date:</th> <th style="text-align:left;">Install Date:</th> <th style="text-align:left;">Owner:</th></tr>';
+        emailBodyList.add(intro);
+        emailBodyList.add(headers);
+
+		for (Custom_Order__c log: queryResults) {
+                                                string formattedDate = log.Order_Date__c.format();
+                                                string formattedDateInstall = log.Install_Date__C.format();
+            									string formattedShipDate = log.Ship_Date__c.format();
+                                                String fullFileURL = URL.getSalesforceBaseUrl().toExternalForm() +  '/' + log.id;
+                                                String emailLine = '<tr><td>' + log.name + '</td>'+'<td>' + formattedDate + '</td>' + '<td>' + formattedShipDate + '</td>' 
+                                                    + '<td>'+ formattedDateInstall + '</td>'+ '<td>' + log.owner.name + '</td>' +'</tr>';
+                                                    
+                                                emailBodyList.add(emailLine);	
+                                                }
+                                                if (!emailBodyList.isEmpty()) {
+                                                    system.debug('sent email');
+                                                    string text = '</br></br></br>Thank You!';
+                                                    sendEmailMessage(emailBodyList);
+                                                } 
+        										else { system.debug('No Message Sent- list is empty.');}
+        
+	}
+}
