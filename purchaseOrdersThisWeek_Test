@@ -1,0 +1,42 @@
+@isTest
+private class purchaseOrdersThisWeek_Test {
+
+    static testMethod void validatePurchaseOrderAlert(){
+        
+    }
+    
+    static testMethod void validateParsePurchaseOrders(){
+        Custom_Order__c myCustomOrder = new custom_Order__C();
+        myCustomOrder.name = 'Bob';
+        myCustomOrder.Install_Date__c = system.today()+ 21;
+        myCustomOrder.OwnerId = UserInfo.getUserId();
+        myCustomOrder.Order_Amount__c = 300;
+        myCustomOrder.Lead_Time_In_Weeks__c = 1;
+        insert myCustomOrder;
+    test.startTest();
+    purchaseOrdersThisWeek myTest = new purchaseOrdersThisWeek();
+    myTest.parsePurchaseOrders();
+    purchaseOrdersThisWeek myTestBackOrder = new purchaseOrdersThisWeek();
+    myTestBackOrder.parsePurchaseOrdersBackOrder();
+    test.stopTest();
+    }
+    
+        static testMethod void validateParsePurchaseOrdersBackOrders(){
+        Custom_Order__c myCustomOrder1 = new custom_Order__C();
+        myCustomOrder1.name = 'Bob';
+        myCustomOrder1.Install_Date__c = system.today()+ 21;
+        myCustomOrder1.OwnerId = UserInfo.getUserId();
+        myCustomOrder1.Order_Amount__c = 300;
+        myCustomOrder1.Lead_Time_In_Weeks__c = 1;
+        myCustomOrder1.Order_Type__c ='Back Order';
+        insert myCustomOrder1;
+    test.startTest();
+    purchaseOrdersThisWeek myTest = new purchaseOrdersThisWeek();
+    myTest.parsePurchaseOrders();
+    purchaseOrdersThisWeek myTestBackOrder = new purchaseOrdersThisWeek();
+    myTestBackOrder.parsePurchaseOrdersBackOrder();
+    test.stopTest();
+    }
+
+    
+}
