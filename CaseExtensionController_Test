@@ -1,0 +1,59 @@
+@isTest
+public class CaseExtensionController_Test {
+    
+    static testMethod void testMethodInsert()
+    {
+        //create and insert contact record for technician
+        Contact testContactTechnician = new Contact();
+        testContactTechnician.LastName = 'Betty Jones';
+        insert testContactTechnician;
+        
+        //create and insert contact record for designer
+        Contact testContactDesigner = new Contact();
+        testContactDesigner.LastName = 'Michael Jackson';
+        insert testContactDesigner;
+        
+        //create case and inster required values for query in class
+        Case testCase = new Case();
+        testCase.Division__c ='Salt WoodWorks';
+        testCase.Scheduled_Technician__c = testContactTechnician.Id;
+        testCase.Designer__c = testContactDesigner.Id;
+        insert testCase;
+        date dateOrdered = date.today();
+        date dateShipped = date.today();
+        dateShipped.addDays(2);
+        
+        //create and assign field values for material query
+        Material__C testMaterial = new Material__C();
+        testMaterial.Color__c ='Red';
+        testMaterial.Material_Cost__c = 300;
+        testMaterial.Date_Ordered__c = dateOrdered;
+        testMaterial.Quantity__c = 3;
+        testMaterial.Shipping_Date__c = dateShipped;
+        testMaterial.SKU__c = '333';
+        testMaterial.Material_Description__c = 'Test Desc';
+        testMaterial.Parent_Case__c = testCase.Id;
+        testMaterial.Vendor__c = 'Amazon';
+         testMaterial.In_Stock__c = 'No';
+        insert testMaterial;
+        //start test of caseExtensionController
+        Test.startTest(); 
+        //instantiate a new case for the standard controller to assist 
+        case myCase = new case();
+        ApexPages.StandardController caseController = new ApexPages.StandardController(myCase);
+        //pass the testCase ID to the apexpages.currentPage parameter
+            ApexPages.currentPage().getParameters().put('id',String.valueOf(testCase.Id));
+        //instatiate a caseExtension Controller and pass the standard controller(the case)
+        	CaseExtensionController testContactProcess = new CaseExtensionController(caseController);
+        //test the methods
+        	testContactProcess.getDesigner();
+        	testContactProcess.getTechnician();
+        	testContactProcess.getImage();
+        	testContactProcess.getMaterialList();
+        //stop the test
+        Test.stopTest();
+       		
+        
+    }
+
+}
