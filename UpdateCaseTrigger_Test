@@ -1,0 +1,29 @@
+@isTest
+public class UpdateCaseTrigger_Test {
+
+    static testmethod void test_trigger(){
+        
+        Account newAccount = new account();
+        newAccount.Name = 'mytestAcc';
+        insert newAccount;
+        Contact newContact = new contact();
+        newContact.FirstName = 'John';
+        newContact.LastName ='Cash';
+        newContact.AccountId = newAccount.Id;
+        insert newContact;
+        Contact newContact2 = new contact();
+        newContact2.FirstName = 'John';
+        newContact2.LastName ='Cash';
+        newContact2.AccountId = newAccount.Id;
+        insert newContact2;
+        Case newCase = new case();   
+		newCase.AccountId = newAccount.id;
+        newCase.Customer__c = newContact.Id;
+		insert newCase;
+        Test.startTest();
+        newCase.Customer__c = newContact2.Id;
+        update newCase;
+        Test.stopTest();
+    }
+    
+}
