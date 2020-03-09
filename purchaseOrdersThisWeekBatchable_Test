@@ -1,0 +1,20 @@
+@isTest
+public class purchaseOrdersThisWeekBatchable_Test {
+    static testMethod void testBatch(){
+        test.startTest();
+        purchaseOrdersThisWeekBatchable remindOfOrders = new purchaseOrdersThisWeekBatchable();
+		string sch='20 30 8 10  2 ?';
+        string runJob = System.schedule('Purchase Orders Alert', sch, remindOfOrders);
+        test.stopTest();
+            
+    }
+        static testMethod void testBatchBackOrder(){
+        test.startTest();
+        PurchaseOrdersBackOrderBatchable remindOfBackOrders = new PurchaseOrdersBackOrderBatchable();
+		string sch='20 30 8 10  2 ?';
+        string runJob = System.schedule('Purchase Orders Alert', sch, remindOfBackOrders);
+        test.stopTest();
+            
+    }
+    
+}
