@@ -1,0 +1,6 @@
+global class PurchaseOrdersThisWeekBatchable implements schedulable{
+global void execute(SchedulableContext sc) {
+		PurchaseOrdersThisWeek purchaseScanner = new PurchaseOrdersThisWeek();
+		purchaseScanner.parsePurchaseOrders();
+	}
+}
