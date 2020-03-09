@@ -1,0 +1,9 @@
+trigger UpdateCase on Case (before update, before insert) {
+    
+    List<case> caseList= new List<case>();
+    
+    for(Case a : Trigger.New){
+     a.ContactId = a.Customer__c; 
+    }
+        
+}
