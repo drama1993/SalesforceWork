@@ -1,0 +1,27 @@
+@isTest
+public class InstallationTrigger_Test {
+    
+    static testmethod void testTrigger(){
+        
+        Account newAccount = new account();
+        newAccount.Name = 'mytestAcc';
+        insert newAccount;
+        Contact newContact = new contact();
+        newContact.FirstName = 'John';
+        newContact.LastName ='Cash';
+        newContact.AccountId = newAccount.Id;
+        insert newContact;
+        opportunity testopty = new opportunity();
+        testopty.Name ='test Opty';
+        testopty.AccountId = newAccount.Id;
+        date newDate = Date.today();
+        testopty.CloseDate = newDate;
+        testopty.StageName = 'Qualification';
+        testopty.Installation_Date__c = newDate;
+        Test.startTest();
+        insert testopty;
+        Test.stopTest();
+
+    }
+
+}
