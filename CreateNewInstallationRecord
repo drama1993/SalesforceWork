@@ -1,0 +1,29 @@
+trigger CreateNewInstallationRecord on Opportunity (after insert) {
+    	
+    	Integer installationEndDateInteger = 3;
+    	List<Installation__C> installationRecords = new List<Installation__C>();
+    	
+    for (Opportunity opty : Trigger.new) {
+        Installation__C installationRecord = new Installation__C();
+        Account thisAcc = [select ID, ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, Phone from account where id =:opty.AccountId];
+        Contact thisContact = [select ID, Name from contact where AccountID =:opty.AccountId];
+        installationRecord.Name = opty.name + 'Installation';
+        installationRecord.Opportunity_Name__c = opty.id;
+        installationRecord.Contact_Name__c = thisContact.id;
+        installationRecord.Account_Name__c = opty.AccountId;
+        installationRecord.Installation_Start_Date__c = opty.Installation_Date__c;
+        installationRecord.Installation_End_Date__c = opty.Installation_Date__c + installationEndDateInteger;
+        installationRecord.Street__c = thisAcc.ShippingStreet;
+        installationRecord.City__c = thisAcc.ShippingCity;
+        installationRecord.State_Province__c = thisAcc.ShippingState;
+        installationRecord.Zip_Postal_Code__c = thisAcc.ShippingPostalCode;
+        installationRecord.Client_Phone__c = thisAcc.phone;
+        installationRecords.add(installationRecord);
+    }
+        try{
+            insert installationRecords;
+           }catch (Exception e){
+                System.debug(e);
+           }
+
+}
