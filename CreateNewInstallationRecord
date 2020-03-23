@@ -6,7 +6,7 @@ trigger CreateNewInstallationRecord on Opportunity (after insert) {
     for (Opportunity opty : Trigger.new) {
         Installation__C installationRecord = new Installation__C();
         Account thisAcc = [select ID, ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, Phone from account where id =:opty.AccountId];
-        Contact thisContact = [select ID, Name from contact where AccountID =:opty.AccountId];
+        Contact thisContact = [select ID, Name from contact where AccountID =:opty.AccountId limit 1];
         installationRecord.Name = opty.name + 'Installation';
         installationRecord.Opportunity_Name__c = opty.id;
         installationRecord.Contact_Name__c = thisContact.id;
