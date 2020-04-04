@@ -1,27 +1,45 @@
-trigger CreateNewInstallationRecord on Opportunity (after insert) {
+trigger CreateNewInstallationRecord on Opportunity (after update, after insert) {
     	
     	Integer installationEndDateInteger = 3;
     	List<Installation__C> installationRecords = new List<Installation__C>();
-    	
+
     for (Opportunity opty : Trigger.new) {
-        Installation__C installationRecord = new Installation__C();
-        Account thisAcc = [select ID, ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, Phone from account where id =:opty.AccountId];
-        Contact thisContact = [select ID, Name from contact where AccountID =:opty.AccountId limit 1];
-        installationRecord.Name = opty.name + 'Installation';
-        installationRecord.Opportunity_Name__c = opty.id;
-        installationRecord.Contact_Name__c = thisContact.id;
-        installationRecord.Account_Name__c = opty.AccountId;
-        installationRecord.Installation_Start_Date__c = opty.Installation_Date__c;
-        installationRecord.Installation_End_Date__c = opty.Installation_Date__c + installationEndDateInteger;
-        installationRecord.Street__c = thisAcc.ShippingStreet;
-        installationRecord.City__c = thisAcc.ShippingCity;
-        installationRecord.State_Province__c = thisAcc.ShippingState;
-        installationRecord.Zip_Postal_Code__c = thisAcc.ShippingPostalCode;
-        installationRecord.Client_Phone__c = thisAcc.phone;
-        installationRecords.add(installationRecord);
+        List<Installation__C> ExistingRecords = new List<Installation__C>();
+        try{
+                Installation__C checkExistingRecords = [Select Opportunity_Name__c from Installation__C where Opportunity_Name__c = :opty.id limit 1];
+                ExistingRecords.add(checkExistingRecords);
+            }catch (Exception e){
+                    System.debug(e);
+            }
+        if(ExistingRecords.isEmpty()){
+            Installation__C installationRecord = new Installation__C();
+            Account thisAcc = [select ID, ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, Phone from account where id =:opty.AccountId];
+            Contact thisContact = [select ID, Name from contact where AccountID =:opty.AccountId limit 1];
+            installationRecord.Name = opty.name + 'Installation';
+            installationRecord.Opportunity_Name__c = opty.id;
+            installationRecord.Contact_Name__c = thisContact.id;
+            installationRecord.Account_Name__c = opty.AccountId;
+            installationRecord.Street__c = thisAcc.ShippingStreet;
+            installationRecord.City__c = thisAcc.ShippingCity;
+            installationRecord.State_Province__c = thisAcc.ShippingState;
+            installationRecord.Zip_Postal_Code__c = thisAcc.ShippingPostalCode;
+            installationRecord.Client_Phone__c = thisAcc.phone;
+                if(opty.Installation_Date__c != null){
+                    installationRecord.Installation_Start_Date__c = opty.Installation_Date__c;
+                    installationRecord.Installation_End_Date__c = opty.Installation_Date__c + installationEndDateInteger;
+                    installationRecords.add(installationRecord);
+        }
+            else{return;}
+        }
+        
     }
         try{
-            insert installationRecords;
+            if(installationRecords.isEmpty()){
+             	return;
+            }
+            else{
+                insert installationRecords;
+            }
            }catch (Exception e){
                 System.debug(e);
            }
