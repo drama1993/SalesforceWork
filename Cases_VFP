@@ -1,0 +1,115 @@
+<apex:page standardController="Case" extensions="CaseExtensionController" tabStyle="opportunity" title="Case Print">
+    <style>
+        .imageStyle {Width: 150px; Height: 150px;} /*formatting for the page */
+        @media print
+            {    
+        .no-print 
+                {
+        			display: none !important; /*Takes the specified value out of print */
+                }
+            }
+       	   @page {
+                    size: auto;   /* removes page url from print view*/
+                    margin: 0;  /* this affects the margin in the printer settings */
+                 }
+            .btn
+        		{
+      			    font-size: 1.3em !important; /*updates button size */
+        		}
+        /*       	.bPageBlock, .detailList, .data2Col 
+        		{
+        			text-align: center !important;*/Centers the text */
+        } */
+        body { font-family: 'Arial Unicode MS'; }
+        h3 {color: black; !important font-weight: bold; !Important}
+        .printableHeader{
+        border: 3px solid black; background-color:black; color:white; -webkit-print-color-adjust: exact; margin: 10px 0px 10px 0px;
+        }
+        .headerFont{font-size: 1.1em; font-weight: bold;}
+    </style>
+        <script>
+            function redirect() {
+                window.location = '/{!Case.id}';
+            }
+    </script>
+    <apex:form >
+<apex:pageBlock >
+    <div style="text-align: center; margin-bottom: 20px;">
+            <apex:commandLink value="Print"  onclick="window.print();" styleclass="btn no-print"/>
+               <apex:outputLink value="/{!Case.id}" styleclass="btn no-print">Return</apex:outputLink>      
+    </div>
+ <!--   <apex:pageBlockSection title="Company Information:" columns="1"> -->
+           <apex:pageBlockSection columns="1">
+     <!--  <div style= "text-align: center;">    
+			 <font size="4px"><i>{!Case.division__C}</i></font>
+       </div> -->
+    <!--   </apex:pageBlockSection> -->
+            </apex:pageBlockSection>
+        <div style="text-align: left; display: block; margin: auto;">
+                <apex:variable var="img" value="{!image}"/> 
+                <apex:image url="/resource/1571354576000/Division_Logos/{!img}" height="12%" width="20%"/> 
+        </div>
+    	<div class='printableHeader'>
+        <font class="headerFont">Customer Information:</font>
+    	</div>
+        <apex:pageBlockSection title="Customer Information" columns="2" showHeader="false">
+        <apex:repeat value="{!ParentAccount}" var="acc">
+        <apex:outputField value="{!acc.name}"/>
+        <apex:outputField value="{!acc.Community__c}"/>
+        <apex:outputField value="{!acc.ShippingStreet}"/> 
+        <apex:outputField value="{!acc.phone}"/>
+        <apex:outputField value="{!acc.City_State_Zip__c}"/>
+        <apex:outputField value="{!acc.PersonMobilePhone}"/>     
+        </apex:repeat>
+    </apex:pageBlockSection>
+	<div class='printableHeader'>
+        <font class="headerFont">Contractual Dates:</font>
+    </div>
+    <apex:pageBlockSection title="Contractual Dates:" columns="2" showHeader="false" >
+        <!-- <apex:outputText value="{!Case.id}"/> -->
+        <apex:outputText value="{!Case.type}"/>
+        <apex:outputField value="{!Case.Outstanding_Balance__c}"/>    
+        <apex:outputField value="{!Case.Scheduled_Service_Date__c}"/>
+        <apex:outputField value="{!Case.Contract_Install_Date__c}"/>  
+        <apex:outputText value="{!Case.Subject}"/> 
+        <apex:repeat value="{!Technician}" var="tech"><apex:outputText value="{!tech.Technician_Name__c}" style="account"/></apex:repeat>  
+        <apex:outputText value="{!Case.Priority}"/>     
+      	<apex:repeat value="{!Designer}" var="designer"><apex:outputText value="{!designer.Designer_Name__c}" style="account"/></apex:repeat> 
+    </apex:pageBlockSection>
+    	<div class='printableHeader'>
+        <font class="headerFont">Work Details:</font>
+    </div>
+        <apex:pageBlockSection title="Work Details:" columns="1" showHeader="false">
+         <apex:outputField title="Description of the issue" style="height:50px;" value="{!Case.Description}" />
+         <apex:outputField style="height:50px;" value="{!Case.Scope_Of_Work__c}"/>
+         <apex:outputField style="height:50px;" value="{!Case.Special_Instructions__c}"/>   
+    </apex:pageBlockSection>
+    	<div class='printableHeader'>
+        <font class="headerFont">Materials:</font>
+    </div>
+    <apex:pageBlockSection title="Materials:" columns="1" showHeader="false">
+      <center>
+        <apex:pageBlockTable value="{!MaterialList}" var="materials"> <!-- Materials table-->
+        <apex:column value="{!materials.Quantity__c}" />
+        <apex:column value="{!materials.SKU__c}"/>
+        <apex:column value="{!materials.Color__c}"/>
+       <!-- <apex:column value="{!materials.Material_Cost__c}"/> -->
+       <!-- <apex:column value="{!materials.Cost_Total__c}"/> -->
+        <apex:column value="{!materials.Material_Description__c}"/>
+        <apex:column value="{!materials.Date_Ordered__c}"/>	
+        <apex:column value="{!materials.Shipping_Date__c}"/>
+		<apex:column value="{!materials.Vendor__c}"/>   
+        </apex:pageBlockTable> 
+        </center>
+    </apex:pageBlockSection>
+    	<div class='printableHeader'>
+        <font class="headerFont">Post Service Notes:</font>
+    </div>
+        <apex:pageBlockSection columns="1" title="Post Service Notes:" showHeader="false">
+       <center><apex:inputTextarea cols="118" style="height:260px;" readonly="true"></apex:inputTextarea></center>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+    </apex:form>
+</apex:page>
+
+<!--Page URL: /apex/Cases_Printable_View?id=50019000004YTe6AAG-->
