@@ -2,23 +2,24 @@ public with sharing class CaseExtensionController {
     
     Case caseRecord;
     Contact contactRecordTechnician;
-	Contact contactRecordDesigner;
+    Contact contactRecordDesigner;
     account caseAccountParent;
     id caseRecordID;
 
     
     public CaseExtensionController(ApexPages.StandardController controller)
     {
-     caseRecord = [Select id, Division__C, Scheduled_Technician__c,Designer__c,AccountId from Case where Id =:ApexPages.currentPage().getParameters().get('id')];
-      caseRecordID = caseRecord.Id;
+	     caseRecord = [Select id, Division__C, Scheduled_Technician__c,Designer__c,AccountId from Case where Id =:ApexPages.currentPage().getParameters().get('id')];
+	     caseRecordID = caseRecord.Id;
     }
     public String getImage() {
-        string myString='test';
-        if(CaseRecord.Division__c == 'Artisan Interiors Group'){myString = 'AR.png';}
-        if(CaseRecord.Division__c == 'Behind Closed Doors'){myString = 'BCD.png';}
-        if(CaseRecord.Division__c == 'Commercial Interiors Specialties'){myString = 'CIS.png';}
-        if(CaseRecord.Division__c == 'Fenwick Island'){myString = 'FI.png';}
-        if(CaseRecord.Division__c == 'Salt WoodWorks'){myString = 'SWW.png';}
+    
+        string myString='Place holder';
+        if(CaseRecord.Division__c == 'Artisan Interiors Group'){myString = 'AR.png';}  //Hard-coded
+        if(CaseRecord.Division__c == 'Behind Closed Doors'){myString = 'BCD.png';} //Hard-coded
+        if(CaseRecord.Division__c == 'Commercial Interiors Specialties'){myString = 'CIS.png';} //Hard-coded
+        if(CaseRecord.Division__c == 'Fenwick Island'){myString = 'FI.png';} //Hard-coded
+        if(CaseRecord.Division__c == 'Salt WoodWorks'){myString = 'SWW.png';} //Hard-coded
 
         return myString;
     }
@@ -35,17 +36,17 @@ public with sharing class CaseExtensionController {
     
         public Contact getTechnician() {
 
-        // Searches for the technician associated with the case.. qo query the name
+        // Searches for the technician associated with the case.. to query the name
             try{
         contactRecordTechnician = [Select ID, name, Technician_Name__c 
-							From Contact
-                            Where ID = :caseRecord.Scheduled_Technician__c];
+				   From Contact
+                            	   Where ID = :caseRecord.Scheduled_Technician__c];
                 if(Test.isRunningTest())
 			{
 				throw new QueryException();
 			}
             }
-            catch(QueryException e){
+            catch(QueryException e){ //Throwing exception for new data incase the test data doesn't exist in prod
                 contact exceptionContact = new contact();
                 exceptionContact.FirstName =' ';
                 exceptionContact.LastName =' ';
@@ -60,14 +61,14 @@ public with sharing class CaseExtensionController {
         // Searches for the Designer associated with the case.. to query the name
          try{
         contactRecordDesigner = [Select ID, name, Designer_Name__C 
-							From Contact
-                            Where ID = :caseRecord.Designer__c];
+				 From Contact
+                                 Where ID = :caseRecord.Designer__c];
              if(Test.isRunningTest())
 			{
 				throw new QueryException();
 			}
          }
-         catch(QueryException e){
+         catch(QueryException e){//Throwing exception for new data incase the test data doesn't exist in prod
                 contact exceptionContact = new contact();
                 exceptionContact.FirstName =' ';
                 exceptionContact.LastName =' ';
@@ -80,8 +81,8 @@ public with sharing class CaseExtensionController {
 
         // Searches for the Account associated with the case.. 
         caseAccountParent = [Select ID, name, phone, PersonMobilePhone, City_State_Zip__c,ShippingStreet, Community__c
-							From Account
-                            Where ID = :caseRecord.AccountId];
+			     From Account
+                             Where ID = :caseRecord.AccountId];
             
             return caseAccountParent;
     }
