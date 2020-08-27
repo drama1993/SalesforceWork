@@ -20,7 +20,7 @@ public class CaseExtensionController_Test {
         testCase.Designer__c = testContactDesigner.Id;
         insert testCase;
         date dateOrdered = date.today();
-        date dateShipped = date.today();
+        date dateShipped = date.today(); 
         dateShipped.addDays(2);
         
         //create and assign field values for material query
