@@ -1,0 +1,179 @@
+<apex:page standardController="Quote" extensions="QuotePull" lightningStylesheets="false" showHeader="false">
+        <head>
+    <style>
+        p{
+        	font-family: 'Oswald', sans-serif;
+        	}
+        tr:nth-child(even) {background-color: #eceaea}
+        body{
+        		background: #eceaea !important; 	
+        	}
+       .container{
+        			background: white;
+        		  }
+        .individualPalette .quoteBlock .secondaryPalette{
+        					border-color: #ffd505 !important;
+        				   }
+        #gold{
+        		    background-color: #ffd505;
+    				width: 16px;
+        	 }
+        #customScope{
+        				background-color: #eceaea; 
+        				width: 1px; 
+        				text-align: right; 
+        				border-bottom: black; 
+        				border-top: 2px;"
+        			}
+        #trStyle{
+        		border: 3px solid white;
+        		}
+        #tdStyle{
+        		background-color: #ffd505;
+        		width: 2px;
+        		}
+        tr.headerRow th{
+        			background: blue !important;
+        			color:white !important;
+        			font-family: 'Oswald', sans-serif;
+        		   }
+        .goldLineQuote
+        		{
+        			margin-left: 194px; 
+        			width: auto;
+        			margin-bottom: -7px;
+        			margin-top: -14px;
+        			height: 5px;
+        			background-color: #ffd505;
+        		}
+        @media screen and (max-width: 1050px)
+        {
+        .goldLineQuote
+        		{
+        			margin-left: 147px; 
+        			width: auto;
+        			margin-bottom: -7px;
+        			margin-top: -14px;
+        			height: 5px;
+        			background-color: #ffd505;
+        		}
+        }
+        @media screen and (max-width: 780px)
+        {
+        .goldLineQuote
+        		{
+        			margin-left: auto; 
+        			width: auto;
+        			margin-bottom: -7px;
+        			margin-top: -14px;
+        			height: 5px;
+        			background-color: #ffd505;
+        		}
+        }
+        .vl {
+  				border-left: 3px solid gold;
+  				height: 60px;
+        		margin-left: 100px;
+			}
+    </style>
+           <!-- <b><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/></b> -->
+            <b><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/></b>        	
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </head>
+    <body>
+    <div class="container">
+       <div class="row">
+           	<div class="col-7">
+                <P>
+                    <apex:image url="/resource/1571354576000/Division_Logos/AR.png" width="70%"></apex:image>
+                </P>
+             </div>
+             <div class="col-2">
+                 <p class="vl"></p>
+             </div>
+                 <div class="col-3">
+                     <p><b styleclass="font-weight: 600px;">Artisan Interiors</b><br></br>
+                     Company Street address<br></br>
+                     Company City, state, zip</p>
+                 </div>
+        </div>
+    </div>
+    <div class="container" style="padding-top: 100px;">
+        <div class="row">
+            <div style="padding-left: 25px;" class="col-6">
+                    <p style="text-align: left;">
+                       <b style="padding-bottom: 10px; text-align:left">Recipient</b><br></br>
+                        Mr. John Doe<br></br>
+                        165 Stone Mountain Road<br></br>
+                        Stone Mountain, Ga, 30093<br></br>
+                    </p> 
+            </div>
+            <div class="col-6">
+                    <p style="text-align: right;">
+                   <!-- <b style="padding-bottom: 10px; text-align:right;">Agency</b><br></br>
+                        Artisan Interiors<br></br>
+                        ABC Road on the Mountain<br></br>
+                        Stone Mountain, Ga, 30093<br></br> -->
+                        <p style="font-size: 45px; font-weight: 700; text-align: center; margin-top: -27px;">QUOTE</p>
+                        <hr class="goldLineQuote"></hr>   
+                    </p> 
+            </div>
+		</div>
+    </div>
+<div class="container" style="padding-top: 55px;">
+    <apex:form >
+   <!-- <b style="font-family: 'Cousine', monospace; font-size: 40px; padding-top:30px;">Total Due: $256.00</b> -->
+    <apex:pageBlock >
+        <apex:pageBlockTable value="{!QuoteLineItem}" var="qli" columnsWidth="50">
+            <apex:column value="{!qli.Product2Id}" style="font-family: 'Oswald', sans-serif;" colspan="7"/>
+            <apex:column value="{!qli.Quantity}" style="font-family: 'Oswald', sans-serif;"/>
+			<apex:column value="{!qli.UnitPrice}" style="font-family: 'Oswald', sans-serif;"/>      
+            <apex:column value="{!qli.TotalPrice}" style="font-family: 'Oswald', sans-serif;"/>
+        </apex:pageBlockTable>
+                           <apex:pageBlockButtons >
+   <apex:commandLink value="Edit" action="{!updateQuoteLineItemReturn}" target="_parent" styleclass="btn"/>
+   <apex:commandLink value="Print"  onclick="window.print();" styleclass="btn no-print"/>
+   <apex:commandLink value="Generate"  action="{!savePDF}" styleclass="btn no-print"/>
+       </apex:pageBlockButtons>
+    </apex:pageBlock>
+                   </apex:form>
+            <div class="container">
+                <div class="row">
+                    <div class="col-8">
+                        <hr style="margin-left: 1px; width: 115px; margin-bottom: -7px; height: 5px; background-color: #ffd505;"></hr>
+                        <p style="font-size: 25px;"><i>Thank you for your business!</i></p>
+                        </div>
+                    <div class="col-4">
+                <table class="table table-striped" style="line-height: 6.1px">
+  <thead style="background-color: white;">
+  </thead>
+  <tbody>
+    <tr id="trStyle">
+      <th scope="row" id="customScope">Sub Total:</th>
+      <td id="tdStyle">$200.00</td>
+    </tr>
+    <tr id="trStyle">
+      <th scope="row" id="customScope">Total With Tax:</th>
+      <td id="tdStyle">$500.00</td>
+    </tr>
+    <tr id="trStyle">
+      <th scope="row" id="customScope">Discount Total:</th>
+      <td id="tdStyle">$300.00</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+      </div>
+      </div>
+      </div>
+</body>
+              <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+                    <div class="container">
+                                <center><b>ORDER ACKNOWLEDGEMENT</b></center>
+<P>By signing this proposal, I agree to the terms and conditions as stated in the Behind Closed Doors Terms &amp; Conditions and Installation
+Guidelines. Furthermore, I acknowledge and approve all designs, specifications, comments and project notes as stated in the proposal.
+I hereby confirm that this is an order. Any items and or services not specifically mentioned in this proposal are not included.</P>
+ 
+    <EZSign:getSignature bgColour="#ffffcc" />
+                            </div>
+</apex:page>
