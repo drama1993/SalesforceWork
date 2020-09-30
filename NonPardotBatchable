@@ -8,7 +8,7 @@ global class NonPardotBatchable implements Database.Batchable<sObject>{
     }
     global void execute(Database.BatchableContext BC, List<Event> eventList){
         List<ID> IDsToUpdate = new List<ID>();
-        
+        // info here- https://www.sfdcpoint.com/salesforce/batch-apex-example-in-salesforce/
         //processing batch records - default is 200
         for(Event event: eventList){
             IDsToUpdate.add(event.AccountId);
