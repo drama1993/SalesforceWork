@@ -13,11 +13,10 @@ global class NonPardotBatchable implements Database.Batchable<sObject>{
         for(Event event: eventList){
             IDsToUpdate.add(event.AccountId);
         }
-        // info here- https://www.sfdcpoint.com/salesforce/batch-apex-example-in-salesforce/
         
         if(!IDsToUpdate.isEmpty()){
             
-        	List<Account> accountsToUpdate = [Select ID,Last_Activity_Date_non_Pardot__c from account where ID IN:IDsToUpdate];
+        	List<Account> accountsToUpdate = [Select ID,Last_Activity_Date_non_Pardot__c from account where Last_Activity_Date_non_Pardot__c != Today And ID IN:IDsToUpdate];
             
             for(account acc: accountsToUpdate){
                 acc.Last_Activity_Date_non_Pardot__c = Date.today();
