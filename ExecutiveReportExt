@@ -1,0 +1,20 @@
+public class ExecutiveReportExt {
+
+
+    public List<Opportunity> opportunities{get;set;}
+    
+    public pageReference fetchReport(){
+        
+        opportunities = [Select ID,Account.Formatted_Account_Name__c, Owner.Name, Formatted_Opportunity_Name__c, StageName,Closing_Quarter__c, Amount,Probability,CloseDate, CreatedDate,LeadSource,Type,Formatted_Summary_Current__c,Formatted_Summary_Next__c,
+      (Select CreatedDate from OpportunityHistories Order By CreatedDate Desc Limit 1),
+   	  (Select Subject,ActivityDate from Tasks Order By CreatedDate Desc Limit 2),
+      (Select Subject,CreatedDate from Events Order By CreatedDate Desc Limit 1)                  
+		from Opportunity 
+        Where StageName !='Closed Won' 
+        AND StageName !='Closed Lost'
+        Order By Account.Name
+        Desc];
+
+        return null;
+    }
+}
