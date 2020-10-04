@@ -1,0 +1,36 @@
+@IsTest(SeeAllData=true)
+public class NonPardotBatchable_Test {
+    
+    static testMethod void validateEventAndAccount(){
+        
+        
+        List<account> acclst = new list<account>();
+        
+        Account testAcc = new account();
+        testAcc.Name ='TestAcc';
+        testAcc.OwnerId= UserInfo.getUserId();
+        testAcc.Type='Local';
+        testAcc.Category__c = 'Activities';
+        testAcc.Locale__c = 'USA';
+        acclst.add(testAcc);
+        
+        insert acclst;
+        System.debug(acclst);
+        List<event> eventList = new list<event>();
+        Event testEvent = new event();
+        testEvent.Subject = 'Appointment';
+        TestEvent.StartDateTime = system.today();
+        TestEvent.EndDateTime = System.today();
+        TestEvent.OwnerId = UserInfo.getUserId();
+        testEvent.WhatId = testAcc.Id;
+        eventList.add(testEvent);
+        insert eventList; 
+        
+		NonPardotBatchable testbatch = new NonPardotBatchable();
+        testbatch.query ='Select ID, AccountId,EndDateTime from event where AccountID !=null And EndDateTime = Today';      
+        Test.startTest();
+        Database.executeBatch(testbatch, 200);
+        Test.stopTest();
+    }
+
+}
