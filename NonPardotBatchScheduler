@@ -1,0 +1,8 @@
+global class NonPardotBatchScheduler implements schedulable{
+
+    global void execute(SchedulableContext sc){
+        NonPardotBatchable nonPardot = new NonPardotBatchable();
+        
+        Database.executeBatch(nonPardot, 200);
+    }
+}
