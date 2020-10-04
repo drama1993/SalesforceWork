@@ -1,14 +1,13 @@
 global class NonPardotBatchable implements Database.Batchable<sObject>{
     
+    
+    public string query='Select ID, AccountId,EndDateTime from event where AccountID !=null And EndDateTime = Today';
     global Database.QueryLocator start(Database.BatchableContext BC){
-        //Collect the batches of records or objects to be passed to execute
-        
-        String query = 'Select ID, AccountId,EndDateTime from event where AccountID !=null And EndDateTime = Today';
        return Database.getQueryLocator(query);
     }
     global void execute(Database.BatchableContext BC, List<Event> eventList){
         List<ID> IDsToUpdate = new List<ID>();
-        // info here- https://www.sfdcpoint.com/salesforce/batch-apex-example-in-salesforce/
+        
         //processing batch records - default is 200
         for(Event event: eventList){
             IDsToUpdate.add(event.AccountId);
@@ -20,6 +19,7 @@ global class NonPardotBatchable implements Database.Batchable<sObject>{
             
             for(account acc: accountsToUpdate){
                 acc.Last_Activity_Date_non_Pardot__c = Date.today();
+                system.debug(acc.Id);
             }
             try{
                 update accountsToUpdate;
@@ -34,4 +34,3 @@ global class NonPardotBatchable implements Database.Batchable<sObject>{
         // execute any post-processing operations like sending email
     }
 }
-    
