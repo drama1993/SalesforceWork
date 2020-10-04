@@ -30,6 +30,9 @@ public class NonPardotBatchable_Test {
         testbatch.query ='Select ID, AccountId,EndDateTime from event where AccountID !=null And EndDateTime = Today';      
         Test.startTest();
         Database.executeBatch(testbatch, 200);
+        NonPardotBatchScheduler testschedule = new NonPardotBatchScheduler();
+        string schedule='0 0 20 * * ? *';
+        string runJob = System.schedule('Non Pardot Field Update',schedule,testschedule);
         Test.stopTest();
     }
 
