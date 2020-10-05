@@ -1,6 +1,27 @@
-<apex:page cache="true" action="{!fetchReport}" contentType="application/vnd.ms-excel#contacts.csv" showHeader="false" sidebar="false" standardStylesheets="false" controller="ExecutiveReportExt">ID, Account Name, Owner Name, Opportunity Name, Stage Name, Fiscal Period, Amount, Probability, Closed Date, Created Date, Lead Source, Type, Executive Summary Current Status,Current Status,Executive Summary Next Steps, Last Stage Change, Next Contact Date, Last Contact Date
-        <apex:repeat value="{!opportunities}" var="exec">
-			{!exec.ID},{!exec.Account.Formatted_Account_Name__c},{!exec.Owner.Name},{!exec.Formatted_Opportunity_Name__c},{!exec.Stagename},{!exec.Closing_Quarter__c},${!exec.Amount},{!exec.Probability}%,<apex:outputText value="{0,date,MM/dd/yy}"><apex:param value="{!exec.CloseDate}"/></apex:outputText>,<apex:outputText value="{0,date,MM/dd/yy}"><apex:param value="{!exec.CreatedDate}"/></apex:outputText>,{!exec.LeadSource},{!exec.Type},{!exec.Formatted_Summary_Current__c},<apex:outputText > </apex:outputText>,{!exec.Formatted_Summary_Next__c},
-            <apex:repeat value="{!exec.OpportunityHistories}" var="temp"><apex:outputText value="{0,date,MM/dd/yy}"><apex:param value="{!temp.CreatedDate}"/></apex:outputText></apex:repeat>,<apex:repeat value="{!exec.Tasks}" var="tasks"><apex:outputText value="{0,date,MM/dd/yy}"><apex:param value="{!tasks.ActivityDate}"/></apex:outputText>,</apex:repeat>
-        </apex:repeat>
-</apex:page>
+public class ExecutiveReportExt {
+
+	ApexPages.StandardController sc;
+    //added this to enable the button
+    public ExecutiveReportExt(ApexPages.StandardController sc){
+        
+    }
+    
+    //creating a list of opps
+    public List<Opportunity> opportunities{get;set;}
+    
+    //report logic
+    public pageReference fetchReport(){
+        
+        opportunities = [Select ID,Account.Formatted_Account_Name__c, Owner.Name, Formatted_Opportunity_Name__c, StageName,Closing_Quarter__c, Amount,Probability,CloseDate, CreatedDate,LeadSource,Type,Formatted_Summary_Current__c,Formatted_Summary_Next__c,
+      (Select CreatedDate from OpportunityHistories Order By CreatedDate Desc Limit 1),
+   	  (Select Subject,ActivityDate from Tasks Order By CreatedDate Desc Limit 2),
+      (Select Subject,CreatedDate from Events Order By CreatedDate Desc Limit 1)                  
+		from Opportunity 
+        Where StageName !='Closed Won' 
+        AND StageName !='Closed Lost'
+        Order By Account.Name
+        Desc];
+
+        return null;
+    }
+}
