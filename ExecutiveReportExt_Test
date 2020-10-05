@@ -1,0 +1,39 @@
+@isTest
+public class ExecutiveReportExt_Test {
+	
+    
+    static testMethod void validateExecReport(){
+        Account testAcc = new account();
+        Opportunity testOpp = new Opportunity();
+        Task testTask = new Task();
+        
+        // creating a test account
+        testAcc.Name='Test Account';
+        testAcc.OwnerId = UserInfo.getUserId();
+        testAcc.Type='Analyst';
+        insert testAcc;
+        
+        //creating a testOpp
+        testOpp.name='TestOpp';
+        testOpp.AccountId=testAcc.Id;
+        testOpp.Type='New Business';
+        testOpp.StageName='Negotiation';
+        testOpp.CloseDate=System.today();
+        testOpp.Amount=500;
+        insert testOpp;
+        //Creating a test task
+        testTask.Subject='Call';
+        testTask.OwnerId=UserInfo.getUserId();
+        testTask.Status='Not Started';
+        testTask.WhatId= testopp.Id;
+        insert testTask;
+        //
+        ApexPages.StandardController sc = new ApexPages.StandardController(testOpp); //to satisfy the class
+        
+        test.startTest();
+        ExecutiveReportExt testReport = new ExecutiveReportExt(sc);
+        testReport.fetchReport();
+        test.stopTest();
+        
+    }
+}
