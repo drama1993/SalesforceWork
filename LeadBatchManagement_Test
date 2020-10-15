@@ -1,0 +1,82 @@
+@isTest
+global class LeadBatchManagement_Test {
+   
+    
+    @IsTest	
+     static void leadManagementMCA(){
+		//test user
+         user testuser= [select id from user where profile.id='00e6g0000017tJQ' And IsActive=TRUE limit 1];
+         //runnign as the test user
+         System.runAs(testuser){
+             
+         //creating and inserting custom setting MCA/ASAP
+        Lead_Queue_Management__c mc = new Lead_Queue_Management__c();
+        mc.num_of_Leads_per_Refresh_Moby__c =2;
+        mc.MCA_In_Progress__c = '00G6g000000kULFEA2';
+        mc.num_of_Leads_per_Refresh_ASAP__c = 2;
+        mc.ASAP_In_Progress__c = '00G0r000000v3h1EAA';
+        insert mc;
+             
+         //creating and inserting leads MCA  
+        List<Lead> testLeadsMCA = new List<Lead>();
+        Integer leadCount = 10;
+        for (Integer i = 0; i < leadCount; i++) {
+            Lead thisLead = new Lead(
+                LastName = 'test' + i,
+                Company = i + 'test' + i,
+                FirstName = i + 'test' + i,
+                OwnerID = mc.MCA_In_Progress__c,
+                LeadSource = 'Libertas'
+            );
+            testLeadsMCA.add(thisLead);
+        }
+        insert testLeadsMCA;
+             
+          //creating and inserting leads ASAP   
+        List<Lead> testLeadsASAP = new List<Lead>();
+        for (Integer i = 0; i < leadCount; i++) {
+            Lead thisLead = new Lead(
+                LastName = 'testASAP' + i,
+                Company = i + 'testASAP' + i,
+                FirstName = i + 'testASAP' + i,
+                OwnerID = mc.ASAP_In_Progress__c,
+                LeadSource = 'Libertas'
+            );
+            testLeadsASAP.add(thisLead);
+        }
+        insert testLeadsASAP;
+             
+          
+         } // end of runASUser
+         
+         //separate data class for test record creation
+         TestBatchHelper_Test.additionalSetUpData();
+         test.startTest();
+         //MCA BATCH
+        LeadQueueManagementBatch_MCA LeadManagementMCA = new LeadQueueManagementBatch_MCA(); 
+        Database.executeBatch(LeadManagementMCA, 200);
+         
+         //ASAP BATCH
+        LeadQueueManagementBatch LeadManagementASAP = new LeadQueueManagementBatch(); 
+        Database.executeBatch(LeadManagementASAP, 200); 
+         
+         //test scheduler ASAP
+        LeadQueueManagementBatchable testschedule = new LeadQueueManagementBatchable();
+        string schedule='0 0 20 * * ? *';
+        string runJob = System.schedule('Lead Management',schedule,testschedule);
+         
+         //test scheduler MCA
+        LeadQueueManagementBatchableMCA testscheduleMCA = new LeadQueueManagementBatchableMCA();
+        string scheduleMCA='0 0 20 * * ? *';
+        string runJobMCA = System.schedule('Lead Management MCA',scheduleMCA,testscheduleMCA);
+         
+        test.stopTest();
+         
+         //checking counts after test
+         List<lead> assignedLeadList = [Select ID from lead where Previously_Contacted_By__c !=null];
+         //ASAP
+        System.assertEquals(20, assignedLeadList.size());       
+    }    
+    
+    
+}
