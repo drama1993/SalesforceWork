@@ -1,0 +1,47 @@
+@isTest
+public class TestBatchHelper_Test {
+    
+    @isTest
+    public static void additionalSetUpData(){
+        
+        //test users MCA/ASAP
+        List<User> testUsers = TestDataFactory.createUsers(10, '00e6g0000017tJQ');
+         insert testUsers;
+         List<ID> userIDsMCA = new List<ID>();
+         List<ID> userIDsASAP = new list<ID>();
+         System.debug('The id list is'+userIDsMCA);         
+         for(User users: testUsers){
+             if(testUsers.indexOf(users) <= 4){
+               userIDsMCA.add(users.id);
+             }
+             if(testUsers.indexOf(users) >= 5){
+                  userIDsASAP.add(users.id);
+             }
+         }
+         System.debug('Test User Count'+ testUsers.size());
+		
+         //group member MCA
+         List<GroupMember> testMembersMCA = new List<GroupMember>();
+                  for (ID thisUser : userIDsMCA) {
+                        GroupMember member = new GroupMember(
+                            UserOrGroupId = thisUser,
+                            GroupId = '00G6g000000kULFEA2'
+                        );
+                        testMembersMCA.add(member);
+                }
+            insert testMembersMCA;
+            System.debug('GroupMember Count MCA '+testMembersMCA.size());
+        
+         //group member ASAP
+         List<GroupMember> testMembersASAP = new List<GroupMember>();
+                  for (ID thisUser : userIDsASAP) {
+                        GroupMember member = new GroupMember(
+                            UserOrGroupId = thisUser,
+                            GroupId = '00G0r000000v3h1EAA'
+                        );
+                        testMembersASAP.add(member);
+                }
+        insert testMembersASAP;
+    System.debug('group member count ASAP '+testMembersASAP.size());
+}
+}
