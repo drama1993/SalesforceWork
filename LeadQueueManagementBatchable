@@ -2,9 +2,6 @@ global class LeadQueueManagementBatchable implements schedulable {
     
 global void execute(SchedulableContext sc){
         LeadQueueManagementBatch ASAPLeadQueue = new LeadQueueManagementBatch();
-        Database.executeBatch(ASAPLeadQueue);
-        LeadQueueManagementBatch_MCA MCALeadQueue = new LeadQueueManagementBatch_MCA();
-        Database.executeBatch(MCALeadQueue);    
-    
+        Database.executeBatch(ASAPLeadQueue);  
     }
 }
