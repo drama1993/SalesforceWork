@@ -1,0 +1,7 @@
+global class LeadQueueManagementBatchableMCA implements schedulable {
+    
+    global void execute(SchedulableContext sc){
+        LeadQueueManagementBatch_MCA MCALeadQueue = new LeadQueueManagementBatch_MCA();
+        Database.executeBatch(MCALeadQueue); 
+    }
+}
