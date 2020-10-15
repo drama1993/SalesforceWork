@@ -1,0 +1,119 @@
+global class LeadQueueManagementBatch_MCA implements Database.Batchable<sObject> {
+//access custom settings
+    Lead_Queue_Management__c mc = Lead_Queue_Management__c.getOrgDefaults();
+    //this field is where the max lead count is stored
+    public Integer numOfLeadPerRefresh_ASAP = (Integer)mc.num_of_Leads_per_Refresh_Moby__c;
+    
+    //this field stores the ID of the queue in a custom setting
+    public ID mcaInProgress = (ID)mc.MCA_In_Progress__c;
+    //ASAP HVS Cadence Leads - New 00G0r000000v3h1EAA
+    //MCA Open - New  00G6g000000kULFEA2
+    
+    //Temporary Assignment List
+    public List<Lead> tempLeadList = new List<Lead>();
+    
+    //List of users in queue
+    public List<GroupMember> usersInQueue = new List<GroupMember>();
+    // initialize the data on which to perform the operation
+    
+    //users in the queue
+    public List<ID> usuersInQueueIDs = new List<ID>();
+    
+   	//creating a map with user id and amount of leads currently owned- will use this to convert from aggregate ressult to integer
+   	Map<ID,Integer> UserLeadCount = New Map<ID,Integer>();
+   	
+    //bool lead controller 
+    boolean outOfLeads = false;
+    global Database.QueryLocator start(Database.BatchableContext bc)
+    {	        	
+           Database.QueryLocator newLeadsInQueue = Database.getQueryLocator([SELECT ID, Name,Previously_Contacted_By__c,Owner.ID from lead where OwnerID=:mcaInProgress AND Previously_Contacted_By__c =NULL]);
+           //returning results of query
+        return newLeadsInQueue;
+    }
+    
+    global void execute(Database.BatchableContext bc, List<Lead> newLeadsQueue){  
+        System.debug('these are the leads passed over'+ newLeadsQueue);
+        //find users that are within the queue // Sales Cadence object 
+        usersInQueue = [Select ID,UserorGroupId from GroupMember where GroupID =:mcaInProgress];
+        
+        //looping through group to get user IDs for query
+        for(GroupMember gp : usersInQueue){
+            usuersInQueueIDs.add(gp.ID);
+        }
+        //display them in debug
+        System.debug('Users In Queue' +usersInQueue);
+        
+        //putting results from lead into an aggregate result where only users who were previously contacted are counted
+		List <AggregateResult> results = [SELECT Previously_Contacted_By__c userID, COUNT(Name)LeadCount FROM Lead Where Owner.ID=:mcaInProgress And Previously_Contacted_By__c IN:usuersInQueueIDs GROUP BY Previously_Contacted_By__c];
+        
+        // displaying the aggregate results in the debug
+        System.debug('aggregate results:' + results);
+        //iterating through the aggregate results
+        for (AggregateResult res : results) {
+
+               //for each aggregate result of the list of users and their leads owned, convert the lead count to an integer and add it to a map of user ID and lead count
+               UserLeadCount.put((ID)res.get('userID'),(Integer)res.get('LeadCount'));
+            }
+
+        //displaying the userid and amount of leads owned in debug
+        System.debug('lead count Users' + UserLeadCount.keySet());
+			
+        //loop over usersInQueue and if the userID within the queue isn't in the map, add them to the map, with a leadcount of 0
+        
+        for(GroupMember userlist: usersInQueue){
+            
+            if(!UserLeadCount.containsKey(userlist.UserorGroupId)){
+                UserLeadCount.put(userlist.UserorGroupId, 0);
+                System.debug('added:'+userlist.UserOrGroupId);
+            }
+        }
+        
+        //displaying the userid and amount of leads owned in debug after adding any missed users
+        System.debug('lead count Users (if missed)' + UserLeadCount.keySet());
+        
+        //iterating through the map to compare the user count, if user has less than 200 leads assigned, lets assign new leads
+        for(ID id: UserLeadCount.keyset()){
+			System.debug('Looping current user ID:'+ id);
+            System.debug('NewLeadsQueue Size' + newLeadsQueue.size());
+            if(UserLeadCount.get(id) < numOfLeadPerRefresh_ASAP && newLeadsQueue.isEmpty() != true){
+                
+                //check how many leads the user needs to be assigned
+                Integer remainingLeads = numOfLeadPerRefresh_ASAP - UserLeadCount.get(id) - 1;
+        		System.debug('Remaining Leads to assign Before checkIN-(per user in loop)' +remainingLeads);
+                if(remainingLeads>=newLeadsQueue.size()){
+                    
+                    remainingLeads=newLeadsQueue.size() -1;
+                }
+                System.debug('Remaining leads to assign '+remainingLeads);
+                //assign leads from lead list
+                for(Integer i= remainingLeads; i >= 0; i--){
+                        //adding the lead at index of i to my temp list for assignment
+                       tempLeadList.add(newLeadsQueue.get(i));
+                        //removing the lead from my leadlist
+                        newLeadsQueue.remove(i);
+                    if(newLeadsQueue.size() < 1){
+                        System.debug('Ran out of leads to assign '+ newLeadsQueue.size());
+                        outOfLeads = true;
+                        break;
+                    }
+                    }
+        				//looping over the temp lead list to assign the current user id as the "lead owner".. checks if the previously contacted field is null and assigns it,
+        				// this way the next iteration wont overwrite the previous owners
+                    for(lead lst:tempLeadList){
+                        if(lst.Previously_Contacted_By__c == null){
+                            lst.Previously_Contacted_By__c = id;
+                        }
+                    }
+                }
+            }
+        if(tempLeadList.size() >= 1){
+          update tempLeadList;
+        }
+    }
+    
+    global void finish(Database.BatchableContext bc){
+        
+        System.debug('Batch completed successfully');
+    } 
+  
+}
