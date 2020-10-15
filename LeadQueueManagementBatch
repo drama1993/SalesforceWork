@@ -1,23 +1,24 @@
-global class LeadQueueManagementBatch_MCA implements Database.Batchable<sObject> {
-//access custom settings
+global class LeadQueueManagementBatch implements Database.Batchable<sObject> {
+    
+    //access custom settings
     Lead_Queue_Management__c mc = Lead_Queue_Management__c.getOrgDefaults();
     //this field is where the max lead count is stored
     public Integer numOfLeadPerRefresh_ASAP = (Integer)mc.num_of_Leads_per_Refresh_ASAP__c;
     
     //this field stores the ID of the queue in a custom setting
-    public ID mcaInProgress = (ID)mc.MCA_In_Progress__c;
+    public ID asapInProgress = (ID)mc.ASAP_In_Progress__c;
     //ASAP HVS Cadence Leads - New 00G0r000000v3h1EAA
     //MCA Open - New  00G6g000000kULFEA2
     
     //Temporary Assignment List
-    List<Lead> tempLeadList = new List<Lead>();
+    public List<Lead> tempLeadList = new List<Lead>();
     
     //List of users in queue
-    List<GroupMember> usersInQueue = new List<GroupMember>();
+    public List<GroupMember> usersInQueue = new List<GroupMember>();
     // initialize the data on which to perform the operation
     
     //users in the queue
-    List<ID> usuersInQueueIDs = new List<ID>();
+    public List<ID> usuersInQueueIDs = new List<ID>();
     
    	//creating a map with user id and amount of leads currently owned- will use this to convert from aggregate ressult to integer
    	Map<ID,Integer> UserLeadCount = New Map<ID,Integer>();
@@ -27,15 +28,15 @@ global class LeadQueueManagementBatch_MCA implements Database.Batchable<sObject>
     global Database.QueryLocator start(Database.BatchableContext bc)
     {	        
         //query to get all leads currently unassigned  	//query api name of queue instead of hardcoding id
-        Database.QueryLocator newLeadsInQueue = Database.getQueryLocator([SELECT ID, Name,Previously_Contacted_By__c,Owner.ID from lead where Owner.ID=:mcaInProgress AND Previously_Contacted_By__c =NULL]);
+        Database.QueryLocator newLeadsInQueue = Database.getQueryLocator([SELECT ID, Name,Previously_Contacted_By__c,Owner.ID from lead where OwnerID=:asapInProgress AND Previously_Contacted_By__c =NULL]);
         //returning results of query
         return newLeadsInQueue;
     }
     
     global void execute(Database.BatchableContext bc, List<Lead> newLeadsQueue){  
-        
+        System.debug('these are the leads passed over'+ newLeadsQueue);
         //find users that are within the queue // Sales Cadence object 
-        usersInQueue = [Select ID,UserorGroupId from GroupMember where GroupID =:mcaInProgress];
+        usersInQueue = [Select ID,UserorGroupId from GroupMember where GroupID =:asapInProgress];
         
         //looping through group to get user IDs for query
         for(GroupMember gp : usersInQueue){
@@ -45,15 +46,15 @@ global class LeadQueueManagementBatch_MCA implements Database.Batchable<sObject>
         System.debug('Users In Queue' +usersInQueue);
         
         //putting results from lead into an aggregate result where only users who were previously contacted are counted
-		List <AggregateResult> results = [SELECT Previously_Contacted_By__c userID, COUNT(Name)LeadCount FROM Lead Where Owner.ID=:mcaInProgress And Previously_Contacted_By__c IN:usuersInQueueIDs GROUP BY Previously_Contacted_By__c];
+		List <AggregateResult> results = [SELECT Previously_Contacted_By__c userID, COUNT(Name)LeadCount FROM Lead Where Owner.ID=:asapInProgress And Previously_Contacted_By__c IN:usuersInQueueIDs GROUP BY Previously_Contacted_By__c];
         
         // displaying the aggregate results in the debug
         System.debug('aggregate results:' + results);
         //iterating through the aggregate results
         for (AggregateResult res : results) {
-
-               //for each aggregate result of the list of users and their leads owned, convert the lead count to an integer and add it to a map of user ID and lead count
-               UserLeadCount.put((ID)res.get('userID'),(Integer)res.get('LeadCount'));
+            
+           //for each aggregate result of the list of users and their leads owned, convert the lead count to an integer and add it to a map of user ID and lead count
+           UserLeadCount.put((ID)res.get('userID'),(Integer)res.get('LeadCount'));
             }
 
         //displaying the userid and amount of leads owned in debug
@@ -81,7 +82,7 @@ global class LeadQueueManagementBatch_MCA implements Database.Batchable<sObject>
                 //check how many leads the user needs to be assigned
                 Integer remainingLeads = numOfLeadPerRefresh_ASAP - UserLeadCount.get(id) - 1;
         		System.debug('Remaining Leads to assign Before checkIN-(per user in loop)' +remainingLeads);
-                if(remainingLeads>newLeadsQueue.size()){
+                if(remainingLeads>=newLeadsQueue.size()){
                     
                     remainingLeads=newLeadsQueue.size() -1;
                 }
