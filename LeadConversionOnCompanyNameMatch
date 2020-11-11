@@ -1,0 +1,37 @@
+List<Lead> leadList = [select id,LastName,company from Lead Where IsConverted=false ORDER BY company desc Limit 250];
+Set<String> companyList = new Set<String>();
+//debug on lead list inital query
+System.debug('Lead List Size initial query'+leadList.size());
+//looping over lead list to get the company name into a Set
+for(Lead ld: leadList){
+    companyList.add(ld.Company);
+}
+//Debuginng company name after the names have been added
+System.debug('Company List Size'+companyList.size());
+//List of accounts - acc list query based on company names
+List<Account> accList =[Select Name,ID from Account Where Name IN:companyList];
+//starting a new leadconvert class with an array of leads
+Database.LeadConvert[] lcList = new List<Database.LeadConvert>();
+//assigning the leadstatus for converted to true
+LeadStatus convertStatus = [SELECT Id, MasterLabel FROM LeadStatus WHERE IsConverted=true limit 1];
+//looping over list of leads
+for(Lead myLead : leadList){
+    //        System.debug('First Lead '+ myLead.id);
+    //for each list, loop over the list of accounts
+    for(Account acc: accList){
+        //if the account name matches the company name //lets put the lead in a list of leads to convert
+        if(acc.Name.toLowercase() == myLead.company.toLowercase()){
+        Database.LeadConvert lc = new database.LeadConvert();
+        lc.setLeadId(myLead.id);
+        lc.setAccountid(acc.id);	
+        lc.setConvertedStatus(convertStatus.MasterLabel);
+        lc.setDoNotCreateOpportunity(TRUE);    
+        lcList.add(lc);
+        }
+    }
+}
+for(Database.LeadConvert conv:lcList){
+    System.debug('First Lead Match '+ conv.getLeadID() + 'Account ID matched '+ conv.getAccountID());
+}
+System.debug('Final list of leads matched to convert'+ lcList.size());
+Database.LeadConvertResult[] lcr = Database.convertLead(lcList);
